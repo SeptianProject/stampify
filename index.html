@@ -323,20 +323,45 @@
   </head>
   <body>
     <header>
-      <h1>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect width="24" height="24" rx="6" fill="currentColor" />
-          <rect x="5" y="8" width="14" height="2.4" rx="1.2" fill="var(--bg)" />
-          <rect
-            x="5"
-            y="13.6"
-            width="8"
-            height="2.4"
-            rx="1.2"
-            fill="var(--acc)" /></svg
-        >Stampify
-      </h1>
-      <p>Upload desain + Excel, atur posisi teks, unduh semua hasilnya.</p>
+      <div style="display: flex; flex-direction: column; gap: 4px; width: 100%">
+        <h1
+          style="
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          ">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <rect width="24" height="24" rx="6" fill="currentColor" />
+            <rect
+              x="5"
+              y="8"
+              width="14"
+              height="2.4"
+              rx="1.2"
+              fill="var(--bg)" />
+            <rect
+              x="5"
+              y="13.6"
+              width="8"
+              height="2.4"
+              rx="1.2"
+              fill="var(--acc)" />
+          </svg>
+          Stampify
+        </h1>
+        <p
+          style="
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--ink);
+          ">
+          Bulk Certificate & Document Generator Tanpa Ribet.
+        </p>
+      </div>
     </header>
     <main>
       <div class="stage" id="stage">
