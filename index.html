@@ -323,44 +323,80 @@
   </head>
   <body>
     <header>
-      <div style="display: flex; flex-direction: column; gap: 4px; width: 100%">
-        <h1
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          flex-wrap: wrap;
+          gap: 10px;
+        ">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <rect width="24" height="24" rx="6" fill="currentColor" />
+              <rect
+                x="5"
+                y="8"
+                width="14"
+                height="2.4"
+                rx="1.2"
+                fill="var(--bg)" />
+              <rect
+                x="5"
+                y="13.6"
+                width="8"
+                height="2.4"
+                rx="1.2"
+                fill="var(--acc)" />
+            </svg>
+            Stampify
+          </h1>
+          <p
+            style="
+              margin: 0;
+              font-size: 13px;
+              font-weight: 500;
+              color: var(--mute);
+            ">
+            Satu Desain, Seribu Sertifikat. Otomatis & Hitungan Detik.
+          </p>
+        </div>
+        <button
+          class="btn"
+          id="bTheme"
+          title="Ganti Tema"
           style="
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.03em;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
           ">
-          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-            <rect width="24" height="24" rx="6" fill="currentColor" />
-            <rect
-              x="5"
-              y="8"
-              width="14"
-              height="2.4"
-              rx="1.2"
-              fill="var(--bg)" />
-            <rect
-              x="5"
-              y="13.6"
-              width="8"
-              height="2.4"
-              rx="1.2"
-              fill="var(--acc)" />
-          </svg>
-          Stampify
-        </h1>
-        <p
-          style="
-            margin: 0;
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--ink);
-          ">
-          Bulk Certificate & Document Generator Tanpa Ribet.
-        </p>
+          <span id="themeIcon">
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2"></path>
+              <path d="M12 20v2"></path>
+              <path d="m4.93 4.93 1.41 1.41"></path>
+              <path d="m17.66 17.66 1.41 1.41"></path>
+              <path d="M2 12h2"></path>
+              <path d="M20 12h2"></path>
+              <path d="m6.34 17.66-1.41 1.41"></path>
+              <path d="m19.07 4.93-1.41 1.41"></path>
+            </svg>
+          </span>
+          <span id="themeText">Dark</span>
+        </button>
       </div>
     </header>
     <main>
@@ -895,6 +931,42 @@
       stage.addEventListener("drop", (e) => loadImage(e.dataTransfer.files[0]));
       renderLayers();
       refresh();
+
+      // --- Theme Switcher Logic ---
+      const tBtn = $("bTheme"),
+        tIcon = $("themeIcon"),
+        tText = $("themeText");
+      const sunSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>`;
+      const moonSvg = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>`;
+
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      }
+
+      function updateThemeUI() {
+        const current = document.documentElement.getAttribute("data-theme");
+        const isDark =
+          current === "dark" ||
+          (!current &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (isDark) {
+          tIcon.innerHTML = sunSvg;
+          tText.textContent = "Light";
+        } else {
+          tIcon.innerHTML = moonSvg;
+          tText.textContent = "Dark";
+        }
+      }
+      updateThemeUI();
+
+      tBtn.onclick = () => {
+        const current = document.documentElement.getAttribute("data-theme");
+        let target = current === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", target);
+        localStorage.setItem("theme", target);
+        updateThemeUI();
+      };
     </script>
   </body>
 </html>
