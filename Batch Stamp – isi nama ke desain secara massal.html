@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stampify – isi nama ke desain secara massal</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Poppins:wght@400;600;700&family=Playfair+Display:wght@400;700&family=Great+Vibes&family=Montserrat:wght@400;600;700&family=Cormorant+Garamond:wght@500;700&family=Dancing+Script:wght@500;700&display=swap" />
+    <style>
+      :root {
+        --bg: #fafafa;
+        --panel: #fff;
+        --ink: #0a0a0a;
+        --mute: #6b6b6b;
+        --line: #e5e5e5;
+        --acc: #5b3df5;
+        --acc-ink: #fff;
+        --ok: #0b7d57;
+        --err: #c42b3a;
+        --stage: #f2f2f2;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #0a0a0a;
+          --panel: #111;
+          --ink: #ededed;
+          --mute: #a1a1a1;
+          --line: #262626;
+          --acc: #8b78ff;
+          --acc-ink: #0a0a0a;
+          --ok: #3ecf9a;
+          --err: #ff7683;
+          --stage: #050505;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #0a0a0a;
+        --panel: #111;
+        --ink: #ededed;
+        --mute: #a1a1a1;
+        --line: #262626;
+        --acc: #8b78ff;
+        --acc-ink: #0a0a0a;
+        --ok: #3ecf9a;
+        --err: #ff7683;
+        --stage: #050505;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          14px/1.5 "Geist",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0 0 auto;
+        height: env(safe-area-inset-top, 0px);
+        background: var(--bg);
+        z-index: 10;
+      }
+      header {
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--line);
+      }
+      h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      h1 svg {
+        width: 24px;
+        height: 24px;
+        color: var(--ink);
+      }
+      header p {
+        margin: 0;
+        color: var(--mute);
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 16px;
+        padding: 12px 24px 28px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        main {
+          grid-template-columns: 1fr;
+          padding: 12px 14px 28px;
+        }
+        header {
+          padding: 12px 14px;
+        }
+      }
+      .stage {
+        background:
+          radial-gradient(var(--line) 1px, transparent 1px) 0 0/16px 16px,
+          var(--stage);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 22px;
+        min-height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 12px;
+      }
+      @media (max-width: 900px) {
+        .stage {
+          position: static;
+        }
+      }
+      .stage canvas {
+        width: 100%;
+        height: auto;
+        display: none;
+        border-radius: 4px;
+        box-shadow:
+          0 0 0 1px var(--line),
+          0 10px 30px rgba(0, 0, 0, 0.12);
+        touch-action: none;
+        cursor: grab;
+      }
+      .stage canvas.on {
+        display: block;
+      }
+      .stage.drag {
+        outline: 2px dashed var(--acc);
+      }
+      .empty {
+        text-align: center;
+        color: var(--mute);
+        padding: 40px 16px;
+        max-width: 360px;
+      }
+      .empty b {
+        display: block;
+        color: var(--ink);
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .side {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--mute);
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--mute);
+        margin: 8px 0 3px;
+      }
+      input,
+      select,
+      button {
+        font: inherit;
+        color: inherit;
+      }
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        padding: 7px 9px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+      input[type="color"] {
+        width: 100%;
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 2px;
+        background: var(--panel);
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--acc);
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        padding: 7px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: border-color 0.12s;
+      }
+      .btn:hover {
+        border-color: var(--acc);
+      }
+      .btn.pri {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      :focus-visible {
+        outline: 2px solid var(--acc);
+        outline-offset: 2px;
+      }
+      .file {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .file span {
+        color: var(--mute);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .layer {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      .layer.sel {
+        border-color: var(--acc);
+        box-shadow: 0 0 0 1px var(--acc);
+      }
+      .layer .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+      }
+      .ghost {
+        background: none;
+        border: 0;
+        color: var(--err);
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .bar {
+        height: 8px;
+        background: var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+        margin-top: 10px;
+        display: none;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--acc);
+        transition: width 0.15s;
+      }
+      #msg {
+        margin-top: 8px;
+        font-size: 13px;
+        min-height: 18px;
+        color: var(--mute);
+      }
+      #msg.err {
+        color: var(--err);
+      }
+      #msg.ok {
+        color: var(--ok);
+      }
+      .tbl {
+        overflow-x: auto;
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--mute);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="currentColor" />
+          <rect x="5" y="8" width="14" height="2.4" rx="1.2" fill="var(--bg)" />
+          <rect
+            x="5"
+            y="13.6"
+            width="8"
+            height="2.4"
+            rx="1.2"
+            fill="var(--acc)" /></svg
+        >Stampify
+      </h1>
+      <p>Upload desain + Excel, atur posisi teks, unduh semua hasilnya.</p>
+    </header>
+    <main>
+      <div class="stage" id="stage">
+        <canvas id="cv"></canvas>
+        <div class="empty" id="empty">
+          <b>Letakkan desain di sini</b>Sertifikat, undangan, atau kartu apa pun
+          dalam format PNG/JPG. Area nama dibiarkan kosong.
+        </div>
+      </div>
+
+      <div class="side">
+        <section>
+          <h2>1. Desain</h2>
+          <div class="file">
+            <button class="btn" id="bImg">Pilih gambar</button
+            ><span id="tImg">Belum ada file</span>
+          </div>
+          <input
+            type="file"
+            id="fImg"
+            accept="image/png,image/jpeg,image/webp"
+            hidden />
+        </section>
+
+        <section>
+          <h2>2. Daftar nama</h2>
+          <div class="file">
+            <button class="btn" id="bData">Pilih Excel / CSV</button
+            ><span id="tData">Belum ada file</span>
+          </div>
+          <input type="file" id="fData" accept=".xlsx,.xls,.csv" hidden />
+          <div class="tbl" id="cols"></div>
+        </section>
+
+        <section>
+          <h2>3. Teks pada desain</h2>
+          <div id="layers"></div>
+          <div class="row">
+            <button class="btn" id="bAdd">+ Tambah teks</button>
+            <button class="btn" id="bFont">Upload font</button>
+          </div>
+          <input
+            type="file"
+            id="fFont"
+            accept=".ttf,.otf,.woff,.woff2"
+            hidden />
+          <p style="margin: 10px 0 0; color: var(--mute); font-size: 13px">
+            Seret teks langsung di preview untuk memindahkannya. Nama panjang
+            otomatis mengecil agar muat.
+          </p>
+        </section>
+
+        <section>
+          <h2>4. Hasil</h2>
+          <div class="row">
+            <div>
+              <label for="fmt">Format</label
+              ><select id="fmt">
+                <option value="png">PNG</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </div>
+            <div>
+              <label for="fnCol">Nama file dari</label
+              ><select id="fnCol"></select>
+            </div>
+          </div>
+          <label for="prow">Preview baris ke-</label>
+          <input type="number" id="prow" min="1" value="1" />
+          <button class="btn pri" id="bGen" style="margin-top: 12px" disabled>
+            Generate semua
+          </button>
+          <div class="bar" id="bar"><i id="barI"></i></div>
+          <div id="msg" role="status"></div>
+        </section>
+      </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id);
+      const ST = "__static";
+      const S = {
+        img: null,
+        rows: [],
+        cols: [],
+        layers: [],
+        sel: 0,
+        fonts: [
+          "Poppins",
+          "Montserrat",
+          "Playfair Display",
+          "Cormorant Garamond",
+          "Great Vibes",
+          "Dancing Script",
+          "Arial",
+        ],
+        boxes: [],
+      };
+      const cv = $("cv"),
+        ctx = cv.getContext("2d");
+
+      function msg(t, c) {
+        const m = $("msg");
+        m.textContent = t;
+        m.className = c || "";
+      }
+      const fnt = (l, s) => `${l.weight} ${s}px "${l.font}", sans-serif`;
+      const ensureFont = (l) => document.fonts.load(fnt(l, 40)).catch(() => {});
+
+      function newLayer() {
+        const W = S.img ? S.img.naturalWidth : 1000;
+        const first = S.layers.length === 0;
+        return {
+          col: S.cols.length
+            ? S.cols.find((c) => /nama|name/i.test(c)) || S.cols[0]
+            : "",
+          text: "Teks",
+          font: "Poppins",
+          weight: "600",
+          size: Math.round(W * 0.05),
+          color: "#1a1a1a",
+          align: "center",
+          x: 0.5,
+          y: first ? 0.5 : Math.min(0.9, 0.5 + S.layers.length * 0.1),
+          maxW: 0.7,
+        };
+      }
+
+      /* ---------- rendering ---------- */
+      function draw(c, row, preview) {
+        if (!S.img) return;
+        const W = S.img.naturalWidth,
+          H = S.img.naturalHeight;
+        c.clearRect(0, 0, W, H);
+        c.drawImage(S.img, 0, 0, W, H);
+        S.boxes = [];
+        S.layers.forEach((l, i) => {
+          let t =
+            l.col === ST
+              ? l.text
+              : row
+                ? String(row[l.col] ?? "")
+                : l.col
+                  ? `{${l.col}}`
+                  : "Nama Peserta";
+          t = t.trim();
+          if (!t) {
+            S.boxes[i] = null;
+            return;
+          }
+          let s = l.size;
+          c.font = fnt(l, s);
+          let w = c.measureText(t).width;
+          const mw = l.maxW * W;
+          if (w > mw) {
+            s = Math.max(10, Math.floor((s * mw) / w));
+            c.font = fnt(l, s);
+            w = c.measureText(t).width;
+          }
+          c.fillStyle = l.color;
+          c.textAlign = l.align;
+          c.textBaseline = "middle";
+          const X = l.x * W,
+            Y = l.y * H;
+          c.fillText(t, X, Y);
+          const x0 =
+            l.align === "center" ? X - w / 2 : l.align === "left" ? X : X - w;
+          S.boxes[i] = { x: x0, y: Y - s * 0.65, w, h: s * 1.3 };
+          if (preview) {
+            c.save();
+            c.lineWidth = Math.max(2, W / 600);
+            c.strokeStyle = i === S.sel ? "#5b3df5" : "rgba(91,61,245,.4)";
+            c.setLineDash(i === S.sel ? [] : [W / 150, W / 150]);
+            c.strokeRect(x0 - 6, S.boxes[i].y, w + 12, S.boxes[i].h);
+            c.restore();
+          }
+        });
+      }
+      function preview() {
+        if (!S.img) return;
+        const n = Math.min(
+          Math.max(1, parseInt($("prow").value) || 1),
+          Math.max(1, S.rows.length),
+        );
+        draw(ctx, S.rows.length ? S.rows[n - 1] : null, true);
+      }
+
+      /* ---------- image ---------- */
+      function loadImage(file) {
+        if (!file || !file.type.startsWith("image/"))
+          return msg("File harus berupa gambar PNG, JPG, atau WebP.", "err");
+        const url = URL.createObjectURL(file),
+          im = new Image();
+        im.onload = () => {
+          S.img = im;
+          cv.width = im.naturalWidth;
+          cv.height = im.naturalHeight;
+          cv.classList.add("on");
+          $("empty").style.display = "none";
+          $("tImg").textContent =
+            `${file.name} (${im.naturalWidth}×${im.naturalHeight})`;
+          if (!S.layers.length) S.layers.push(newLayer());
+          renderLayers();
+          refresh();
+          preview();
+          msg("");
+        };
+        im.onerror = () =>
+          msg("Gambar tidak bisa dibaca. Coba file lain.", "err");
+        im.src = url;
+      }
+
+      /* ---------- data ---------- */
+      async function loadData(file) {
+        if (!file) return;
+        try {
+          const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+          const rows = XLSX.utils
+            .sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
+              defval: "",
+              raw: false,
+            })
+            .filter((r) => Object.values(r).some((v) => String(v).trim()));
+          if (!rows.length) throw new Error("kosong");
+          S.rows = rows;
+          S.cols = Object.keys(rows[0]);
+          $("tData").textContent = `${file.name} · ${rows.length} baris`;
+          $("cols").textContent = "Kolom: " + S.cols.join(", ");
+          $("prow").max = rows.length;
+          $("prow").value = 1;
+          S.layers.forEach((l) => {
+            if (l.col !== ST)
+              l.col = S.cols.find((c) => /nama|name/i.test(c)) || S.cols[0];
+          });
+          renderLayers();
+          refresh();
+          preview();
+          msg(`${rows.length} baris terbaca.`, "ok");
+        } catch (e) {
+          msg(
+            "File tidak terbaca atau kosong. Pastikan baris pertama berisi judul kolom.",
+            "err",
+          );
+        }
+      }
+
+      /* ---------- layer panel ---------- */
+      function opts(arr, cur) {
+        return arr
+          .map(
+            (v) =>
+              `<option value="${v}"${v === cur ? " selected" : ""}>${v}</option>`,
+          )
+          .join("");
+      }
+      function renderLayers() {
+        $("layers").innerHTML = S.layers
+          .map(
+            (l, i) => `
+  <div class="layer${i === S.sel ? " sel" : ""}" data-i="${i}">
+    <div class="top"><span>Teks ${i + 1}</span>${S.layers.length > 1 ? `<button class="ghost" data-act="del">Hapus</button>` : ""}</div>
+    <label>Isi dari</label>
+    <select data-k="col"><option value="${ST}"${l.col === ST ? " selected" : ""}>Teks tetap</option>${S.cols.map((c) => `<option value="${c}"${c === l.col ? " selected" : ""}>Kolom: ${c}</option>`).join("")}</select>
+    ${l.col === ST ? `<label>Teks</label><input type="text" data-k="text" value="${l.text.replace(/"/g, "&quot;")}">` : ""}
+    <div class="row"><div><label>Font</label><select data-k="font">${opts(S.fonts, l.font)}</select></div>
+    <div><label>Ketebalan</label><select data-k="weight">${opts(["400", "500", "600", "700"], l.weight)}</select></div></div>
+    <label>Ukuran: <span data-o="size">${l.size}</span> px</label>
+    <input type="range" data-k="size" min="10" max="${S.img ? Math.round(S.img.naturalWidth * 0.2) : 400}" value="${l.size}">
+    <label>Lebar maksimum: <span data-o="maxW">${Math.round(l.maxW * 100)}</span>%</label>
+    <input type="range" data-k="maxW" min="0.1" max="1" step="0.01" value="${l.maxW}">
+    <div class="row"><div><label>Warna</label><input type="color" data-k="color" value="${l.color}"></div>
+    <div><label>Rata</label><select data-k="align"><option value="center"${l.align === "center" ? " selected" : ""}>Tengah</option><option value="left"${l.align === "left" ? " selected" : ""}>Kiri</option><option value="right"${l.align === "right" ? " selected" : ""}>Kanan</option></select></div></div>
+  </div>`,
+          )
+          .join("");
+      }
+      function refresh() {
+        $("fnCol").innerHTML = S.cols.length
+          ? S.cols.map((c) => `<option>${c}</option>`).join("")
+          : `<option value="">Nomor urut</option>`;
+        const nm = S.cols.find((c) => /nama|name/i.test(c));
+        if (nm) $("fnCol").value = nm;
+        $("bGen").disabled = !S.img;
+      }
+      $("layers").addEventListener("click", (e) => {
+        const card = e.target.closest(".layer");
+        if (!card) return;
+        const i = +card.dataset.i;
+        if (e.target.dataset.act === "del") {
+          S.layers.splice(i, 1);
+          S.sel = 0;
+          renderLayers();
+          preview();
+          return;
+        }
+        if (S.sel !== i) {
+          S.sel = i;
+          [...document.querySelectorAll(".layer")].forEach((c, j) =>
+            c.classList.toggle("sel", j === i),
+          );
+          preview();
+        }
+      });
+      $("layers").addEventListener("input", async (e) => {
+        const el = e.target,
+          k = el.dataset.k;
+        if (!k) return;
+        const i = +el.closest(".layer").dataset.i,
+          l = S.layers[i];
+        S.sel = i;
+        l[k] = ["size", "maxW"].includes(k) ? parseFloat(el.value) : el.value;
+        const o =
+          el.parentElement.querySelector(`[data-o="${k}"]`) ||
+          el.previousElementSibling?.querySelector?.(`[data-o="${k}"]`);
+        if (o) o.textContent = k === "maxW" ? Math.round(l.maxW * 100) : l.size;
+        if (k === "font" || k === "weight") await ensureFont(l);
+        if (k === "col") renderLayers();
+        preview();
+      });
+      $("bAdd").onclick = () => {
+        S.layers.push(newLayer());
+        S.sel = S.layers.length - 1;
+        renderLayers();
+        preview();
+      };
+
+      /* ---------- custom font ---------- */
+      $("fFont").onchange = async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          const name = f.name
+            .replace(/\.[^.]+$/, "")
+            .replace(/[^\w ]+/g, " ")
+            .trim();
+          const ff = new FontFace(name, await f.arrayBuffer());
+          await ff.load();
+          document.fonts.add(ff);
+          S.fonts.unshift(name);
+          const l = S.layers[S.sel];
+          if (l) l.font = name;
+          renderLayers();
+          preview();
+          msg(`Font "${name}" siap dipakai.`, "ok");
+        } catch (err) {
+          msg(
+            "Font tidak bisa dimuat. Gunakan file .ttf, .otf, .woff, atau .woff2.",
+            "err",
+          );
+        }
+        e.target.value = "";
+      };
+
+      /* ---------- drag on canvas ---------- */
+      let drag = null;
+      const pt = (e) => {
+        const r = cv.getBoundingClientRect();
+        return {
+          x: ((e.clientX - r.left) * cv.width) / r.width,
+          y: ((e.clientY - r.top) * cv.height) / r.height,
+        };
+      };
+      cv.addEventListener("pointerdown", (e) => {
+        const p = pt(e);
+        for (let i = S.boxes.length - 1; i >= 0; i--) {
+          const b = S.boxes[i];
+          if (
+            b &&
+            p.x >= b.x - 20 &&
+            p.x <= b.x + b.w + 20 &&
+            p.y >= b.y &&
+            p.y <= b.y + b.h
+          ) {
+            drag = {
+              i,
+              dx: p.x - S.layers[i].x * cv.width,
+              dy: p.y - S.layers[i].y * cv.height,
+            };
+            S.sel = i;
+            cv.setPointerCapture(e.pointerId);
+            cv.style.cursor = "grabbing";
+            [...document.querySelectorAll(".layer")].forEach((c, j) =>
+              c.classList.toggle("sel", j === i),
+            );
+            break;
+          }
+        }
+      });
+      cv.addEventListener("pointermove", (e) => {
+        if (!drag) return;
+        const p = pt(e),
+          l = S.layers[drag.i];
+        l.x = Math.min(1, Math.max(0, (p.x - drag.dx) / cv.width));
+        l.y = Math.min(1, Math.max(0, (p.y - drag.dy) / cv.height));
+        preview();
+      });
+      ["pointerup", "pointercancel"].forEach((t) =>
+        cv.addEventListener(t, () => {
+          drag = null;
+          cv.style.cursor = "grab";
+        }),
+      );
+
+      /* ---------- generate ---------- */
+      const safe = (s) =>
+        String(s)
+          .replace(/[\\/:*?"<>|]+/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 80) || "file";
+      const toBlob = (c, type, q) => new Promise((r) => c.toBlob(r, type, q));
+
+      async function save(blob, filename) {
+        try {
+          const d = window.claude && (await claude.use("downloads"));
+          if (d) {
+            await d.save({ filename, data: blob });
+            return;
+          }
+        } catch (e) {
+          if (e && e.code === "declined") throw e;
+        }
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      }
+
+      $("bGen").onclick = async () => {
+        if (!S.img) return;
+        const rows = S.rows.length ? S.rows : [null];
+        const usesData = S.layers.some((l) => l.col !== ST);
+        if (usesData && !S.rows.length)
+          return msg(
+            "Upload file Excel/CSV dulu, atau ubah semua teks menjadi Teks tetap.",
+            "err",
+          );
+        const btn = $("bGen"),
+          bar = $("bar"),
+          fmt = $("fmt").value,
+          fc = $("fnCol").value;
+        btn.disabled = true;
+        bar.style.display = "block";
+        msg("Memuat font...");
+        try {
+          await Promise.all(S.layers.map(ensureFont));
+          const W = S.img.naturalWidth,
+            H = S.img.naturalHeight;
+          const off = document.createElement("canvas");
+          off.width = W;
+          off.height = H;
+          const oc = off.getContext("2d"),
+            zip = new JSZip();
+          for (let i = 0; i < rows.length; i++) {
+            draw(oc, rows[i], false);
+            const base = `${String(i + 1).padStart(3, "0")}_${safe(rows[i] && fc ? rows[i][fc] : "hasil")}`;
+            if (fmt === "png")
+              zip.file(base + ".png", await toBlob(off, "image/png"));
+            else {
+              const pdf = new jspdf.jsPDF({
+                orientation: W >= H ? "l" : "p",
+                unit: "px",
+                format: [W, H],
+                compress: true,
+              });
+              pdf.addImage(
+                off.toDataURL("image/jpeg", 0.92),
+                "JPEG",
+                0,
+                0,
+                W,
+                H,
+              );
+              zip.file(base + ".pdf", pdf.output("arraybuffer"));
+            }
+            $("barI").style.width = ((i + 1) / rows.length) * 90 + "%";
+            msg(`Membuat ${i + 1} dari ${rows.length}...`);
+            await new Promise((r) => setTimeout(r));
+          }
+          msg("Mengemas ZIP...");
+          const blob = await zip.generateAsync({
+            type: "blob",
+            compression: "STORE",
+          });
+          $("barI").style.width = "100%";
+          await save(blob, `hasil-${fmt}.zip`);
+          msg(`Selesai: ${rows.length} file.`, "ok");
+        } catch (e) {
+          msg(
+            e && e.code === "declined"
+              ? "Unduhan dibatalkan. Klik Generate lagi untuk mengulang."
+              : "Gagal membuat file. Coba kurangi resolusi desain atau jumlah baris.",
+            "err",
+          );
+        } finally {
+          btn.disabled = false;
+          setTimeout(() => {
+            bar.style.display = "none";
+            $("barI").style.width = "0";
+          }, 1500);
+          preview();
+        }
+      };
+
+      /* ---------- wiring ---------- */
+      $("bImg").onclick = () => $("fImg").click();
+      $("bData").onclick = () => $("fData").click();
+      $("bFont").onclick = () => $("fFont").click();
+      $("fImg").onchange = (e) => loadImage(e.target.files[0]);
+      $("fData").onchange = (e) => loadData(e.target.files[0]);
+      $("prow").oninput = preview;
+      $("empty").onclick = () => $("fImg").click();
+      const stage = $("stage");
+      ["dragover", "dragenter"].forEach((t) =>
+        stage.addEventListener(t, (e) => {
+          e.preventDefault();
+          stage.classList.add("drag");
+        }),
+      );
+      ["dragleave", "drop"].forEach((t) =>
+        stage.addEventListener(t, (e) => {
+          e.preventDefault();
+          stage.classList.remove("drag");
+        }),
+      );
+      stage.addEventListener("drop", (e) => loadImage(e.dataTransfer.files[0]));
+      renderLayers();
+      refresh();
+    </script>
+  </body>
+</html>
