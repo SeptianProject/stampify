@@ -490,6 +490,7 @@
         layers: [],
         sel: 0,
         fonts: [
+          "Times New Roman",
           "Poppins",
           "Montserrat",
           "Playfair Display",
@@ -508,7 +509,13 @@
         m.textContent = t;
         m.className = c || "";
       }
-      const fnt = (l, s) => `${l.weight} ${s}px "${l.font}", sans-serif`;
+      const SERIF = [
+        "Times New Roman",
+        "Playfair Display",
+        "Cormorant Garamond",
+      ];
+      const fnt = (l, s) =>
+        `${l.weight} ${s}px "${l.font}", ${SERIF.includes(l.font) ? "Times, serif" : "sans-serif"}`;
       const ensureFont = (l) => document.fonts.load(fnt(l, 40)).catch(() => {});
 
       function newLayer() {
@@ -855,10 +862,14 @@
           off.width = W;
           off.height = H;
           const oc = off.getContext("2d"),
-            zip = new JSZip();
+            zip = new JSZip(),
+            used = {};
           for (let i = 0; i < rows.length; i++) {
             draw(oc, rows[i], false);
-            const base = `${String(i + 1).padStart(3, "0")}_${safe(rows[i] && fc ? rows[i][fc] : "hasil")}`;
+            let base = safe(rows[i] && fc ? rows[i][fc] : "hasil");
+            const key = base.toLowerCase();
+            used[key] = (used[key] || 0) + 1;
+            if (used[key] > 1) base += ` (${used[key]})`;
             if (fmt === "png")
               zip.file(base + ".png", await toBlob(off, "image/png"));
             else {
