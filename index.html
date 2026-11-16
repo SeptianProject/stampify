@@ -446,7 +446,8 @@
             hidden />
           <p style="margin: 10px 0 0; color: var(--mute); font-size: 13px">
             Seret teks langsung di preview untuk memindahkannya. Nama panjang
-            otomatis mengecil agar muat.
+            tetap satu baris dengan ukuran font yang sama; lebarnya mengikuti
+            panjang nama.
           </p>
         </section>
 
@@ -533,7 +534,6 @@
           align: "center",
           x: 0.5,
           y: first ? 0.5 : Math.min(0.9, 0.5 + S.layers.length * 0.1),
-          maxW: 0.7,
         };
       }
 
@@ -561,13 +561,7 @@
           }
           let s = l.size;
           c.font = fnt(l, s);
-          let w = c.measureText(t).width;
-          const mw = l.maxW * W;
-          if (w > mw) {
-            s = Math.max(10, Math.floor((s * mw) / w));
-            c.font = fnt(l, s);
-            w = c.measureText(t).width;
-          }
+          const w = c.measureText(t).width;
           c.fillStyle = l.color;
           c.textAlign = l.align;
           c.textBaseline = "middle";
@@ -677,8 +671,6 @@
     <div><label>Ketebalan</label><select data-k="weight">${opts(["400", "500", "600", "700"], l.weight)}</select></div></div>
     <label>Ukuran: <span data-o="size">${l.size}</span> px</label>
     <input type="range" data-k="size" min="10" max="${S.img ? Math.round(S.img.naturalWidth * 0.2) : 400}" value="${l.size}">
-    <label>Lebar maksimum: <span data-o="maxW">${Math.round(l.maxW * 100)}</span>%</label>
-    <input type="range" data-k="maxW" min="0.1" max="1" step="0.01" value="${l.maxW}">
     <div class="row"><div><label>Warna</label><input type="color" data-k="color" value="${l.color}"></div>
     <div><label>Rata</label><select data-k="align"><option value="center"${l.align === "center" ? " selected" : ""}>Tengah</option><option value="left"${l.align === "left" ? " selected" : ""}>Kiri</option><option value="right"${l.align === "right" ? " selected" : ""}>Kanan</option></select></div></div>
   </div>`,
@@ -719,11 +711,11 @@
         const i = +el.closest(".layer").dataset.i,
           l = S.layers[i];
         S.sel = i;
-        l[k] = ["size", "maxW"].includes(k) ? parseFloat(el.value) : el.value;
+        l[k] = k === "size" ? parseFloat(el.value) : el.value;
         const o =
           el.parentElement.querySelector(`[data-o="${k}"]`) ||
           el.previousElementSibling?.querySelector?.(`[data-o="${k}"]`);
-        if (o) o.textContent = k === "maxW" ? Math.round(l.maxW * 100) : l.size;
+        if (o) o.textContent = l.size;
         if (k === "font" || k === "weight") await ensureFont(l);
         if (k === "col") renderLayers();
         preview();
